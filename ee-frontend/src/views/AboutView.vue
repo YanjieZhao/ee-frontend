@@ -13,6 +13,7 @@
 
 <script setup lang="ts">
 import  axios from 'axios'
+import type { AxiosResponse } from 'axios';
 import { ref, onMounted } from 'vue';
 import instance from '@/request'; // 引入配置好的 Axios 实例
 import { nextTick } from 'vue';
@@ -21,7 +22,7 @@ const selectedFile = ref<File | null>(null);
 const message = ref<string>('');
 
 // 处理文件选择事件
-const onFileChange = (event: Event) => {
+const onFileChange = (event: Event, row: any) => {
   const target = event.target as HTMLInputElement;
   if (target.files && target.files[0]) {
     selectedFile.value = target.files[0];
@@ -41,16 +42,16 @@ const uploadFile = async () => {
         'Content-Type': 'multipart/form-data'
       }
     });
-    message.value = response.message;
+    //message.value = response.message;
   } catch (error) {
     message.value = 'File upload failed';
     console.error(error);
   }
 };
 
-const homeworks = ref([]); // 定义作业数据的类型
+const homeworks = ref<any[]>([]); // 定义作业数据的类型
 
-const updateCompleted = async (id, isCompleted) => {
+const updateCompleted = async (id: number, isCompleted: number) => {
   try {
     await instance.get(`/homework/1/${id}/toggle`);
   } catch (error) {
@@ -60,7 +61,8 @@ const updateCompleted = async (id, isCompleted) => {
 
 const fetchHomeworks = async () => {
   try {
-    const response = await instance.get('/homework/0'); // 请求代理地址
+    const response: any[] = await instance.get('/homework/0'); // 请求代理地址
+    console.log(response)
     homeworks.value = response;
     console.log(homeworks.value)
     await nextTick();
@@ -124,7 +126,7 @@ const triggerFileInput = (id: number) => {
   }
 };
 
-const handleCheckboxChange = (row, checked) => {
+const handleCheckboxChange = (row : any, checked: Boolean) => {
       // 根据是否勾选更新为 1 或 0
       row.isCompleted = checked ? 1 : 0;
 
@@ -152,7 +154,7 @@ const handleCheckboxChange = (row, checked) => {
         <template #default="{ row }">
           <el-checkbox
             :model-value="row.isCompleted === 1"
-            @change="(checked) => handleCheckboxChange(row, checked)"
+            @change="(checked: Boolean) => handleCheckboxChange(row, checked)"
           ></el-checkbox>
         </template>
       </el-table-column>
@@ -170,7 +172,7 @@ const handleCheckboxChange = (row, checked) => {
       </el-table-column>
     </el-table>
     <div>
-    <input type="file" @change="onFileChange" />
+    
     <button @click="uploadFile" :disabled="!selectedFile">Upload</button>
     <p v-if="message">{{ message }}</p>
   </div>

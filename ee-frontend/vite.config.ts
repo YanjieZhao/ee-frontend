@@ -18,7 +18,7 @@ export default defineConfig({
   server: {
     proxy: {
         "/homework": {
-            target: "http://localhost:3000/",
+            target: "http://120.26.88.175:81/",
             changeOrigin: true,
         },
     },
