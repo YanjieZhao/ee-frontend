@@ -17,6 +17,9 @@ import type { AxiosResponse } from 'axios';
 import { ref, onMounted } from 'vue';
 import instance from '@/request'; // 引入配置好的 Axios 实例
 import { nextTick } from 'vue';
+const selectedOption = ref("点点"); // 默认选择“点点”
+const attributeValue = ref(0); // 默认属性值为0
+import { ElSelect, ElOption } from 'element-plus';
 
 const selectedFile = ref<File | null>(null);
 const message = ref<string>('');
@@ -53,17 +56,27 @@ const homeworks = ref<any[]>([]); // 定义作业数据的类型
 
 const updateCompleted = async (id: number, isCompleted: number) => {
   try {
-    await instance.get(`/homework/1/${id}/toggle`);
+    await axios.get(`http://120.26.88.175:81/homework/1/${id}/toggle`);
   } catch (error) {
     console.error('Error updating homework:', error);
   }
 };
 
 const fetchHomeworks = async () => {
+  // try {
+  //   const response: any[] = await instance.get('/homework/0'); // 请求代理地址
+  //   console.log(response)
+  //   homeworks.value = response;
+  //   console.log(homeworks.value)
+  //   await nextTick();
+  // } catch (error) {
+  //   console.error('Error fetching homework:', error);
+  // }
+
   try {
-    const response: any[] = await instance.get('/homework/0'); // 请求代理地址
+    const response = await axios.get(`http://120.26.88.175:81/homework/${attributeValue.value}`); // 请求代理地址
     console.log(response)
-    homeworks.value = response;
+    homeworks.value = response.data;
     console.log(homeworks.value)
     await nextTick();
   } catch (error) {
@@ -135,11 +148,23 @@ const handleCheckboxChange = (row : any, checked: Boolean) => {
       updateCompleted(row.id, row.isCompleted);
     };
 
+    const handleSelectionChange = (value: string) => {
+      attributeValue.value = value === "点点" ? 0 : 1;
+      fetchHomeworks();
+    };
+
+
 </script>
 
 <template>
   <div class="about">
-
+    <div style="display: flex; flex-direction: row; width: 200px;">
+      <label style="width: 100px;">姓名：</label>
+      <el-select v-model="selectedOption" placeholder="请选择" @change="handleSelectionChange">
+        <el-option label="点点" value="点点"></el-option>
+        <el-option label="嘟嘟" value="嘟嘟"></el-option>
+      </el-select>
+    </div>
     <el-table :data="homeworks">
       <el-table-column prop="title" label="Title" width="180"></el-table-column>
       <el-table-column prop="description" label="Description" width="300"></el-table-column>
@@ -147,9 +172,7 @@ const handleCheckboxChange = (row : any, checked: Boolean) => {
       <el-table-column
         prop="time"
         label="Time"
-        width="180"
-        
-      ></el-table-column>
+        width="180"></el-table-column>
       <el-table-column label="Completed" width="100">
         <template #default="{ row }">
           <el-checkbox
@@ -171,7 +194,7 @@ const handleCheckboxChange = (row : any, checked: Boolean) => {
         </template>
       </el-table-column>
     </el-table>
-    <div>
+  <div>
     
     <button @click="uploadFile" :disabled="!selectedFile">Upload</button>
     <p v-if="message">{{ message }}</p>
